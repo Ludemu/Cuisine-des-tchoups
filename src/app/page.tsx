@@ -1,69 +1,99 @@
-import Image from "next/image";
+"use client";
+
+import Link from "next/link";
+import { RecipeIcon } from "@/components/RecipeIcon";
+import { RecipeNavigation } from "@/components/RecipeNavigation";
+import { RecipePhoto } from "@/components/RecipePhoto";
+import { useHousehold } from "@/lib/useHousehold";
+import { useRecipes } from "@/lib/useRecipes";
+
+function formatTime(prep: number | null, cook: number | null) {
+  const total = (prep ?? 0) + (cook ?? 0);
+  if (!total) return "Temps non indiqué";
+  if (total < 60) return `${total} min`;
+  const hours = Math.floor(total / 60);
+  const minutes = total % 60;
+  return minutes ? `${hours} h ${minutes} min` : `${hours} h`;
+}
 
 export default function Home() {
+  const { recipes, isLoaded } = useRecipes();
+  const { household, isLoaded: householdLoaded } = useHousehold();
+  const plannedMeals = [...household.plannedMeals].sort((a, b) => a.plannedAt.localeCompare(b.plannedAt)).slice(0, 2);
+  const needToBuy = household.shoppingItems.filter((item) => !item.checked).length;
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <main className="min-h-screen bg-transparent text-foreground">
+      <div className="mx-auto min-h-screen max-w-lg px-4 pb-32 sm:px-8">
+        <header className="pb-7 pt-9 sm:pb-9 sm:pt-12">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue">La cuisine des Tchoups</p>
+          <h1 className="mt-5 font-editorial text-5xl font-normal leading-none">Bonjour</h1>
+          <p className="mt-3 text-base text-muted">Qu&apos;est-ce qu&apos;on mange bientôt ?</p>
+        </header>
+
+        <section aria-labelledby="home-recipes-heading">
+          <div className="mb-4 flex items-end justify-between gap-3">
+            <div>
+              <h2 id="home-recipes-heading" className="font-editorial text-3xl">Nos recettes</h2>
+              <p className="mt-1 text-sm text-muted">Quelques idées pour commencer</p>
+            </div>
+            <Link href="/Recettes" className="inline-flex min-h-11 items-center px-2 text-sm font-semibold text-blue hover:text-primary">Voir tout</Link>
+          </div>
+
+          {!isLoaded && <p className="rounded-lg border border-border bg-white p-5 text-sm text-muted">Chargement des recettes…</p>}
+          {isLoaded && recipes.length === 0 && <p className="rounded-lg border border-border bg-white p-5 text-sm text-muted">Aucune recette pour le moment.</p>}
+          <div className="space-y-3">
+            {recipes.slice(0, 4).map((recipe) => (
+              <Link key={recipe.id} href={`/Recettes/${recipe.id}`} className="flex min-h-28 items-center gap-3 rounded-lg border border-border bg-white p-3 transition hover:border-blue/50 focus-visible:ring-2 focus-visible:ring-blue">
+                <RecipePhoto src={recipe.photos[0]} title={recipe.title} className="size-20 shrink-0 rounded-md sm:size-24" />
+                <div className="min-w-0 flex-1">
+                  <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.13em] text-blue">{recipe.category}</p>
+                  <h3 className="line-clamp-2 font-editorial text-lg leading-tight">{recipe.title}</h3>
+                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
+                    {(recipe.prepTimeMinutes !== null || recipe.cookTimeMinutes !== null) && <span className="inline-flex items-center gap-1"><RecipeIcon name="clock" className="size-3.5" />{formatTime(recipe.prepTimeMinutes, recipe.cookTimeMinutes)}</span>}
+                    <span className="inline-flex items-center gap-1"><RecipeIcon name="users" className="size-3.5" />{recipe.servings} parts</span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          <Link href="/Recettes/nouvelle" className="mt-5 flex min-h-14 items-center justify-center gap-2 rounded-md bg-blue px-4 text-base font-semibold text-white transition hover:bg-primary">
+            <RecipeIcon name="plus" className="size-5" />
+            Ajouter une recette
+          </Link>
+        </section>
+
+        <section aria-labelledby="home-menu-heading" className="mt-8">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <h2 id="home-menu-heading" className="font-editorial text-2xl">Repas prévus</h2>
+            <Link href="/Menu" className="inline-flex min-h-11 items-center px-2 text-sm font-semibold text-blue">Voir le menu</Link>
+          </div>
+          {!householdLoaded && <p className="rounded-lg border border-border bg-white p-4 text-sm text-muted">Chargement du menu…</p>}
+          {householdLoaded && plannedMeals.length === 0 && <Link href="/Recettes" className="flex min-h-16 items-center justify-center rounded-lg border border-dashed border-blue/40 bg-white px-4 text-sm font-medium text-blue">Ajouter une recette au menu</Link>}
+          <div className="space-y-2">
+            {plannedMeals.map((meal) => {
+              const recipe = recipes.find((item) => item.id === meal.recipeId);
+              return <Link key={meal.id} href={recipe ? `/Recettes/${recipe.id}` : "/Menu"} className="flex min-h-14 items-center justify-between gap-3 rounded-lg border border-border bg-white px-4 py-2"><span className="min-w-0 truncate text-sm font-medium">{recipe?.title ?? "Recette supprimée"}</span><span className="shrink-0 text-xs text-muted">{meal.servings} pers.</span></Link>;
+            })}
+          </div>
+        </section>
+
+        <section aria-labelledby="home-shortcuts-heading" className="mt-8">
+          <h2 id="home-shortcuts-heading" className="mb-3 font-editorial text-2xl">Au quotidien</h2>
+          <div className="grid grid-cols-2 gap-3">
+            <Link href="/Courses" className="flex min-h-24 flex-col justify-between rounded-lg border border-border bg-white p-4 transition hover:border-blue/50">
+              <span className="text-xs font-semibold uppercase tracking-wide text-blue">Courses</span>
+              <span className="font-medium">{householdLoaded ? needToBuy === 0 ? "Liste à jour" : `${needToBuy} à acheter` : "Chargement…"}</span>
+            </Link>
+            <Link href="/Cadeaux" className="flex min-h-24 flex-col justify-between rounded-lg border border-border bg-white p-4 transition hover:border-blue/50">
+              <span className="text-xs font-semibold uppercase tracking-wide text-blue">Cadeaux</span>
+              <span className="font-medium">Mes idées</span>
+            </Link>
+          </div>
+        </section>
+      </div>
+      <RecipeNavigation />
+    </main>
   );
 }

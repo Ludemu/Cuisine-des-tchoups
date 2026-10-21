@@ -1,26 +1,48 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #F8F7F3;
+  --foreground: #25313B;
+  --surface: #FFFFFF;
+  --muted: #6E7981;
+  --primary: #31546B;
+  --primary-light: #E4EDF1;
+  --accent: #567B91;
+  --border: #E3E7E8;
+  --blue: #31546B;
+  --blue-light: #E5EFF3;
+  --font-editorial: Georgia, "Times New Roman", serif;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-primary-light: var(--primary-light);
+  --color-accent: var(--accent);
+  --color-border: var(--border);
+  --color-blue: var(--blue);
+  --color-blue-light: var(--blue-light);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-editorial: var(--font-editorial);
 }
 
 body {
-  background: var(--background);
+  background: linear-gradient(180deg, #EAF1F3 0, var(--background) 26rem);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), sans-serif;
+}
+
+button,
+a,
+input {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
 }
